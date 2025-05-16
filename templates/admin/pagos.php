@@ -1,0 +1,265 @@
+<?php
+include($_SERVER['DOCUMENT_ROOT'] . '/ourcenter/config/init.php');
+
+// pagos.php
+require_once '../../config/db.php';
+
+// Obtener lista de pagos
+$estadoFiltro = isset($_GET['estado']) ? $_GET['estado'] : '';
+$sql = "
+SELECT 
+    pagos.id,
+    usuarios.nombre AS estudiante,
+    pagos.monto,
+    pagos.fecha_creacion,
+    pagos.estado
+FROM pagos
+JOIN inscripciones ON pagos.inscripcion_id = inscripciones.id
+JOIN usuarios ON inscripciones.usuario_id = usuarios.id
+";
+
+if ($estadoFiltro) {
+    $sql .= " WHERE pagos.estado = :estado";
+}
+
+$stmt = $pdo->prepare($sql);
+
+if ($estadoFiltro) {
+    $stmt->bindParam(':estado', $estadoFiltro);
+}
+
+$stmt->execute();
+$pagos = $stmt->fetchAll();
+?>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagos - Our Center</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="../../images/favicon/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../../images/favicon/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="../../images/favicon/android-chrome-512x512.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="../../images/favicon/site.webmanifest">
+    <meta name="theme-color" content="#0a1b5c">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/mstile-144x144.png">
+    <link rel="stylesheet" href="../../css/dashboard.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+    
+    <link rel="stylesheet" href="../../css/dashboard.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+
+</head>
+<body>
+    <?php include '../preloader.php'; ?>
+    
+    <!-- Sidebar Toggle Button -->
+    <div class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo-container">
+            <div class="logo">
+                <img src="../../images/logo.webp" alt="Logo de Our Center">
+                <div class="logo-text" style="margin-left: 10px;">OUR CENTER</div>
+            </div>
+        </div>
+        
+        <ul class="nav flex-column mt-3">
+            <li class="nav-item">
+                <a class="nav-link" href="/ourcenter/templates/dashboard.php">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/ourcenter/templates/admin/Usuarios.php">
+                    <i class="fas fa-users"></i>
+                    <span class="nav-text">Usuarios</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/ourcenter/templates/admin/cursos.php">
+                    <i class="fas fa-book"></i>
+                    <span class="nav-text">Cursos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/ourcenter/templates/admin/inscripciones.php">
+                    <i class="fas fa-user-graduate"></i>
+                    <span class="nav-text">Inscripciones</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="/ourcenter/templates/admin/pagos.php">
+                    <i class="fas fa-credit-card"></i>
+                    <span class="nav-text">Pagos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/ourcenter/templates/admin/solicitudes.php">
+                    <i class="fas fa-envelope"></i>
+                    <span class="nav-text">Solicitudes</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/ourcenter/templates/admin/reportes.php">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="nav-text">Reportes</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/ourcenter/templates/admin/configuracion.php">
+                    <i class="fas fa-cog"></i>
+                    <span class="nav-text">Configuración</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+        
+    <!-- Notificaciones Alert Box -->
+    <div class="alert-box" id="alertBox">
+        <div class="alert-header">
+            <span>Notificaciones</span>
+            <i class="fas fa-times" id="closeAlertBox" style="cursor: pointer;"></i>
+        </div>
+        <div class="alert-body">
+            <div class="alert-message">
+                <div class="d-flex justify-content-between mb-1">
+                    <strong><span class="status-indicator status-new"></span> Nueva solicitud</strong>
+                    <small class="text-muted">Hace 10 min</small>
+                </div>
+                <p class="mb-0">María González está interesada en Teen English</p>
+            </div>
+            <div class="alert-message">
+                <div class="d-flex justify-content-between mb-1">
+                    <strong><span class="status-indicator status-process"></span> Pago pendiente</strong>
+                    <small class="text-muted">Hace 2 horas</small>
+                </div>
+                <p class="mb-0">Carlos Pérez tiene un pago pendiente de vencimiento</p>
+            </div>
+        </div>
+    </div>
+    
+    <?php include '../header.php'; ?>
+
+    <div class="container mt-5">
+        <h1>Lista de Pagos</h1>
+        <div class="mb-3">
+            <label for="filtroEstado" class="form-label">Filtrar por Estado:</label>
+            <select id="filtroEstado" class="form-select" onchange="filtrarPagos()">
+                <option value="">Todos</option>
+                <option value="completado" <?= $estadoFiltro == 'completado' ? 'selected' : '' ?>>Completado</option>
+                <option value="pendiente" <?= $estadoFiltro == 'pendiente' ? 'selected' : '' ?>>Pendiente</option>
+                <option value="fallido" <?= $estadoFiltro == 'fallido' ? 'selected' : '' ?>>Fallido</option>
+            </select>
+        </div>
+
+        <table id="tablaPagos" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Estudiante</th>
+                    <th>Monto</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($pagos as $pago): ?>
+                    <tr>
+                        <td><?= $pago['id'] ?></td>
+                        <td><?= $pago['estudiante'] ?></td>
+                        <td><?= number_format($pago['monto'], 2) ?> USD</td>
+                        <td><?= date('d-m-Y', strtotime($pago['fecha_creacion'])) ?></td>
+                        <td>
+                            <span class="badge bg-<?= ($pago['estado'] == 'completado') ? 'success' : (($pago['estado'] == 'pendiente') ? 'warning' : 'danger') ?>">
+                                <?= ucfirst($pago['estado']) ?>
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="cambiarEstado(<?= $pago['id'] ?>, 'completado')">Marcar como Completado</button>
+                            <button class="btn btn-sm btn-danger" onclick="cambiarEstado(<?= $pago['id'] ?>, 'fallido')">Marcar como Fallido</button>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+                <?php include '../footer.php'; ?>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#tablaPagos').DataTable();
+        });
+
+        function filtrarPagos() {
+            const estado = document.getElementById('filtroEstado').value;
+            window.location.href = `pagos.php?estado=${estado}`;
+        }
+
+        function cambiarEstado(id, nuevoEstado) {
+            Swal.fire({
+                title: 'Confirmar cambio de estado',
+                text: `¿Estás seguro de cambiar el estado de este pago a ${nuevoEstado}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, cambiar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Realizar el cambio de estado en la base de datos
+                    $.ajax({
+                        url: 'cambiar_estado_pago.php',
+                        type: 'POST',
+                        data: { id: id, estado: nuevoEstado },
+                        success: function (response) {
+                            if (response == 'success') {
+                                Swal.fire('Estado actualizado', '', 'success');
+                                location.reload();  // Recargar la página para ver los cambios
+                            } else {
+                                Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

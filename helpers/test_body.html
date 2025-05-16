@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Activación de cuenta en ' . $app_name . '</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: \'Segoe UI\', Arial, sans-serif; background-color: #f5f5f5; color: #333333;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+        <!-- Encabezado con logo -->
+        <div style="background-color: #122c8e; padding: 20px; text-align: center; border-radius: 5px 5px 0 0;">
+            <img src="/images/logo.webp" alt="' . $app_name . '" style="max-height: 80px; max-width: 80%;">
+        </div>
+        
+        <!-- Franja de color secundario -->
+        <div style="height: 5px; background: linear-gradient(to right, #122c8e, #00a0e9);"></div>
+        
+        <!-- Contenido principal -->
+        <div style="padding: 30px 25px; line-height: 1.5;">
+            <h2 style="color: #122c8e; margin-top: 0;">¡Bienvenido a ' . $app_name . '!</h2>
+            
+            <p style="font-size: 16px;">Hola <strong>' . htmlspecialchars($nombre) . '</strong>,</p>
+            
+            <p style="font-size: 16px;">Gracias por registrarte en nuestra plataforma. Estamos emocionados de tenerte como parte de nuestra comunidad educativa.</p>
+            
+            <p style="font-size: 16px;">Para comenzar a disfrutar de todos nuestros cursos y recursos, por favor activa tu cuenta haciendo clic en el botón a continuación:</p>
+            
+            <!-- Botón de activación -->
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="' . $activationUrl . '" style="display: inline-block; padding: 12px 30px; background-color: #00a0e9; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; transition: background-color 0.3s ease;">ACTIVAR MI CUENTA</a>
+            </div>
+            
+            <p style="font-size: 14px; color: #666666;">Si el botón no funciona, puedes copiar y pegar la siguiente URL en tu navegador:</p>
+            
+            <div style="background-color: #f0f8ff; padding: 15px; border-radius: 5px; border-left: 4px solid #122c8e; word-break: break-all; margin: 15px 0;">
+                <a href="' . $activationUrl . '" style="color: #122c8e; font-size: 14px;">' . $activationUrl . '</a>
+            </div>
+            
+            <p style="font-size: 14px; color: #666666;">Este enlace expirará en <strong>' . $expiration_hours . ' horas</strong>.</p>
+            
+            <hr style="border: none; border-top: 1px solid #eeeeee; margin: 25px 0;">
+            
+            <p style="font-size: 14px; color: #666666;">Si no has solicitado este registro, puedes ignorar este correo.</p>
+        </div>
+        
+        <!-- Información adicional -->
+        <div style="background-color: #f0f8ff; padding: 20px 25px; border-top: 1px solid #eeeeee;">
+            <p style="font-size: 14px; color: #555555; margin-top: 0;">¿Necesitas ayuda? <a href="' . $base_url . '/contacto.php" style="color: #122c8e; text-decoration: none;">Contáctanos</a></p>
+        </div>
+        
+        <!-- Pie de página -->
+        <div style="background-color: #122c8e; color: #ffffff; padding: 20px; text-align: center; border-radius: 0 0 5px 5px;">
+            <p style="margin: 0 0 10px 0; font-size: 14px;">
+                &copy; ' . date('Y') . ' ' . $app_name . '. Todos los derechos reservados.
+            </p>
+            <div style="margin-top: 15px;">
+                <!-- Iconos de redes sociales - reemplazar URLs con las de la empresa -->
+                <a href="https://www.facebook.com/CORPOURCENTER" style="display: inline-block; margin: 0 8px;"><img src="' . $base_url . '/images/icons/facebook.png" alt="Facebook" width="24" height="24"></a>
+                <a href="https://www.instagram.com/corporacionour/" style="display: inline-block; margin: 0 8px;"><img src="' . $base_url . '/images/icons/instagram.png" alt="Instagram" width="24" height="24"></a>
+                <a href="https://linkedin.com/company/tuempresa" style="display: inline-block; margin: 0 8px;"><img src="' . $base_url . '/images/icons/linkedin.png" alt="LinkedIn" width="24" height="24"></a>
+            </div>
+        </div>
+    </div>
+    <!-- Mensaje informativo -->
+    <div style="max-width: 600px; margin: 10px auto; text-align: center; color: #999999; font-size: 12px;">
+        <p>Este es un correo automático, por favor no responda a este mensaje.</p>
+    </div>
+</body>
+</html>
