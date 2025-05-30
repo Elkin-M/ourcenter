@@ -39,6 +39,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $_SESSION['admin'] = false; // Asignar variable de sesión para usuario normal
                 header("Location: ../templates/estudiante/dashboard.php");
                 exit();
+            }elseif ($usuario['rol_id'] == 3) {
+                $_SESSION['admin'] = false; // Asignar variable de sesión para usuario normal
+                header("Location: ../templates/profesor/dashboard.php");
+                exit();
             }
             exit();
         } else {

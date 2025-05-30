@@ -1,3 +1,9 @@
+<?php
+include '../config/init.php';
+$form_data = $_SESSION['form_data'] ?? [];
+$errores = $_SESSION['form_errors'] ?? [];
+unset($_SESSION['form_data'], $_SESSION['form_errors']);
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -326,7 +332,13 @@
         .password-requirements li.valid::before {
             content: "✓ ";
         }
-        
+        #strength-bar {
+    height: 6px;
+    width: 0;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    background-color: #ccc;
+    border-radius: 4px;
+}
         .select {
             font-size: 15px;
             line-height: 1.5;
@@ -610,6 +622,25 @@
                 margin: 5px 0;
             }
         }
+        .alert-box {
+    padding: 15px;
+    background-color: #f44336; /* rojo */
+    color: white;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+}
+.alert {
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+
     </style>
 </head>
 <body>
@@ -620,7 +651,17 @@
                     <img src="../images/logo.webp" alt="IMG">
                 </div>
 
-                <form id="registrationForm" class="register-form validate-form" method="POST" action="procesar_registro.php" novalidate>
+
+<?php if (!empty($errores)): ?>
+    <div class="alert alert-danger" role="alert">
+        <ul class="mb-0">
+            <?php foreach ($errores as $error): ?>
+                <li><?= htmlspecialchars($error) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
+                <form id="registrationForm" class="register-form validate-form" method="POST" action="../config/registro_proceso.php" novalidate>
                     <span class="register-form-title">
                         Crea tu cuenta en OUR CENTER
                     </span>
@@ -647,7 +688,8 @@
                         <div class="form-row">
                             <div class="form-col">
                                 <div class="wrap-input validate-input" data-validate="El nombre es requerido">
-                                    <input class="input" type="text" id="nombre" name="nombre" placeholder="Nombre">
+                                <input class="input" type="text" id="nombre" name="nombre" placeholder="Nombre"
+                                    value="<?= htmlspecialchars($form_data['nombre'] ?? '') ?>">
                                     <span class="focus-input"></span>
                                     <span class="symbol-input">
                                         <i class="fa fa-user" aria-hidden="true"></i>
@@ -657,7 +699,8 @@
                             </div>
                             <div class="form-col">
                                 <div class="wrap-input validate-input" data-validate="El apellido es requerido">
-                                    <input class="input" type="text" id="apellido" name="apellido" placeholder="Apellido">
+<input class="input" type="text" id="apellido" name="apellido" placeholder="Apellido"
+    value="<?= htmlspecialchars($form_data['apellido'] ?? '') ?>">
                                     <span class="focus-input"></span>
                                     <span class="symbol-input">
                                         <i class="fa fa-user" aria-hidden="true"></i>
@@ -671,12 +714,13 @@
                             <div class="form-col">
                                 <div class="wrap-input validate-input" data-validate="El tipo de documento es requerido">
                                     <select class="select" id="tipo_documento" name="tipo_documento">
-                                        <option value="" selected disabled>Tipo de Documento</option>
-                                        <option value="CC">Cédula de Ciudadanía</option>
-                                        <option value="CE">Cédula de Extranjería</option>
-                                        <option value="TI">Tarjeta de Identidad</option>
-                                        <option value="PAS">Pasaporte</option>
-                                    </select>
+    <option value="" disabled <?= !isset($form_data['tipo_documento']) ? 'selected' : '' ?>>Tipo de Documento</option>
+    <option value="CC" <?= ($form_data['tipo_documento'] ?? '') === 'CC' ? 'selected' : '' ?>>Cédula de Ciudadanía</option>
+    <option value="CE" <?= ($form_data['tipo_documento'] ?? '') === 'CE' ? 'selected' : '' ?>>Cédula de Extranjería</option>
+    <option value="TI" <?= ($form_data['tipo_documento'] ?? '') === 'TI' ? 'selected' : '' ?>>Tarjeta de Identidad</option>
+    <option value="PAS" <?= ($form_data['tipo_documento'] ?? '') === 'PAS' ? 'selected' : '' ?>>Pasaporte</option>
+</select>
+
                                     <span class="focus-input"></span>
                                     <span class="symbol-input">
                                         <i class="fa fa-id-card" aria-hidden="true"></i>
@@ -697,8 +741,8 @@
                         </div>
                         
                         <div class="wrap-input validate-input" data-validate="La fecha de nacimiento es requerida">
-                            <input class="input" type="date" id="fecha_nacimiento" name="fecha_nacimiento">
-                            <span class="focus-input"></span>
+<input class="input" type="date" id="fecha_nacimiento" name="fecha_nacimiento"
+    value="<?= htmlspecialchars($form_data['fecha_nacimiento'] ?? '') ?>">                            <span class="focus-input"></span>
                             <span class="symbol-input">
                                 <i class="fa fa-calendar" aria-hidden="true"></i>
                             </span>
@@ -718,8 +762,8 @@
                     <div class="form-section" data-section="2">
                         <h3 class="section-title"><i class="fas fa-envelope"></i> Información de Contacto</h3>
                         <div class="wrap-input validate-input" data-validate="El email válido es requerido: ex@abc.xyz">
-                            <input class="input input-with-loading" type="email" id="email" name="email" placeholder="Correo Electrónico">
-                            <span class="focus-input"></span>
+<input class="input" type="email" id="email" name="email" placeholder="Correo Electrónico"
+    value="<?= htmlspecialchars($form_data['email'] ?? '') ?>">                            <span class="focus-input"></span>
                             <span class="symbol-input">
                                 <i class="fa fa-envelope" aria-hidden="true"></i>
                             </span>
@@ -730,8 +774,8 @@
                         </div>
                         
                         <div class="wrap-input validate-input" data-validate="El teléfono es requerido">
-                            <input class="input" type="tel" id="telefono" name="telefono" placeholder="Teléfono">
-                            <span class="focus-input"></span>
+<input class="input" type="tel" id="telefono" name="telefono" placeholder="Teléfono"
+    value="<?= htmlspecialchars($form_data['telefono'] ?? '') ?>">                            <span class="focus-input"></span>
                             <span class="symbol-input">
                                 <i class="fa fa-phone" aria-hidden="true"></i>
                             </span>
@@ -793,7 +837,8 @@
                         </div>
 
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="accept_terms" name="accept_terms">
+<input class="form-check-input" type="checkbox" id="accept_terms" name="accept_terms"
+    <?= isset($form_data['accept_terms']) ? 'checked' : '' ?>>
                             <label class="form-check-label" for="accept_terms">
                                 Acepto los <a href="terminos_condiciones.html" class="txt2">Términos y Condiciones</a>
                             </label>
@@ -813,7 +858,7 @@
 
                 <div class="text-center p-t-30 txt2">
                     ¿Ya tienes una cuenta?
-                    <a class="login-link" href="login.html">
+                    <a class="login-link" href="../sesion.php">
                         Iniciar Sesión <i class="fa fa-long-arrow-alt-right" aria-hidden="true"></i>
                     </a>
                 </div>
@@ -831,5 +876,110 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <!-- Main JS -->
     <script src="js/main.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+    function showSection(sectionNumber) {
+        // Mostrar solo la sección correspondiente
+        document.querySelectorAll(".form-section").forEach(section => {
+            section.classList.remove("active");
+        });
+        document.querySelector(`.form-section[data-section="${sectionNumber}"]`).classList.add("active");
+
+        // Actualizar el indicador de pasos
+        document.querySelectorAll(".step").forEach(step => {
+            step.classList.remove("active");
+        });
+        document.querySelector(`.step[data-step="${sectionNumber}"]`).classList.add("active");
+    }
+
+    // Botones "Siguiente"
+    document.getElementById("next-1").addEventListener("click", function () {
+        // Aquí podrías poner validaciones si quieres antes de pasar
+        showSection(2);
+    });
+
+    document.getElementById("next-2").addEventListener("click", function () {
+        showSection(3);
+    });
+
+    // Botones "Anterior"
+    document.getElementById("prev-2").addEventListener("click", function () {
+        showSection(1);
+    });
+
+    document.getElementById("prev-3").addEventListener("click", function () {
+        showSection(2);
+    });
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const passwordInput = document.getElementById("password");
+    const strengthBar = document.getElementById("strength-bar");
+    const strengthText = document.getElementById("strength-text");
+
+    // Requisitos individuales
+    const reqLength = document.getElementById("length");
+    const reqLetter = document.getElementById("letter");
+    const reqCapital = document.getElementById("capital");
+    const reqNumber = document.getElementById("number");
+    const reqSpecial = document.getElementById("special");
+
+    passwordInput.addEventListener("input", function () {
+        const pwd = passwordInput.value;
+        let strength = 0;
+
+        // Evaluar cada requisito
+        const lengthValid = pwd.length >= 8;
+        const letterValid = /[a-z]/.test(pwd);
+        const capitalValid = /[A-Z]/.test(pwd);
+        const numberValid = /[0-9]/.test(pwd);
+        const specialValid = /[^A-Za-z0-9]/.test(pwd);
+
+        // Actualizar clases en los <li>
+        reqLength.classList.toggle("valid", lengthValid);
+        reqLetter.classList.toggle("valid", letterValid);
+        reqCapital.classList.toggle("valid", capitalValid);
+        reqNumber.classList.toggle("valid", numberValid);
+        reqSpecial.classList.toggle("valid", specialValid);
+
+        // Calcular fuerza
+        strength += lengthValid ? 1 : 0;
+        strength += letterValid ? 1 : 0;
+        strength += capitalValid ? 1 : 0;
+        strength += numberValid ? 1 : 0;
+        strength += specialValid ? 1 : 0;
+
+        // Actualizar barra
+        strengthBar.style.width = `${(strength / 5) * 100}%`;
+
+        // Colores y textos
+        const colors = ["#ccc", "#d9534f", "#f0ad4e", "#5bc0de", "#5cb85c"];
+        const texts = ["Sin contraseña", "Muy débil", "Débil", "Buena", "Fuerte"];
+        strengthBar.style.backgroundColor = colors[strength];
+        strengthText.textContent = texts[strength];
+    });
+});
+document.addEventListener("DOMContentLoaded", function () {
+    const toggle = document.getElementById("password-toggle");
+    const passwordInput = document.getElementById("password");
+    const icon = toggle.querySelector("i");
+
+    toggle.addEventListener("click", function () {
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        } else {
+            passwordInput.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+    });
+});
+
+    </script>
+    
+
 </body>
 </html>

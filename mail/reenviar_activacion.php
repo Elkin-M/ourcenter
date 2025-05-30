@@ -1,5 +1,7 @@
 <?php
 include($_SERVER['DOCUMENT_ROOT'] . '/ourcenter/config/init.php');
+$current_page = 'Reenviar activacion'; // Nombre de la página actual
+
 /**
  * reenviar_activacion.php - Reenvía el email de activación de cuenta
  * 
@@ -176,3 +178,8 @@ include __DIR__ . '/../templates/header.php';
 // Incluir la plantilla de pie de página
 include __DIR__ . '/../templates/footer.php';
 ?>
+<style>
+    .main-content {
+     margin-left: 0px;
+    }
+</style>

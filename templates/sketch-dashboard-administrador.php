@@ -2,7 +2,7 @@
 include($_SERVER['DOCUMENT_ROOT'] . '/ourcenter/config/init.php');
 
 // Conexión PDO ($pdo)
-require_once '../../config/db.php'; // ajusta este path
+require_once '../config/db.php'; // ajusta este path
 
 // Cargar datos de resumen
 $total_usuarios = $pdo->query("SELECT COUNT(*) FROM usuarios")->fetchColumn();

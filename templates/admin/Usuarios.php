@@ -3,6 +3,10 @@ include($_SERVER['DOCUMENT_ROOT'] . '/ourcenter/config/init.php');
 
 require_once '../../config/db.php';
 $current_page = 'Usuarios';
+$page_title = "Usuarios";
+$breadcrumb = [
+    ['title' => 'Administracion']
+];
 
 // Paginación
 $registros_por_pagina = 10;
@@ -42,14 +46,7 @@ $stmt->bindValue(':registros_por_pagina', $registros_por_pagina, PDO::PARAM_INT)
 $stmt->execute();
 $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Estadísticas básicas
-$stmt_stats = $pdo->query("SELECT 
-                            COUNT(*) as total_usuarios,
-                            SUM(CASE WHEN estado = 'activo' THEN 1 ELSE 0 END) as usuarios_activos,
-                            SUM(CASE WHEN estado = 'inactivo' THEN 1 ELSE 0 END) as usuarios_inactivos,
-                            SUM(CASE WHEN estado = 'pendiente' THEN 1 ELSE 0 END) as usuarios_pendientes
-                          FROM usuarios");
-$stats = $stmt_stats->fetch(PDO::FETCH_ASSOC);
+
 
 // Obtener roles para filtrar
 $stmt_roles = $pdo->query("SELECT id, nombre FROM roles ORDER BY nombre");
@@ -260,117 +257,31 @@ $roles = $stmt_roles->fetchAll(PDO::FETCH_ASSOC);
 <body>
 <!-- Preloader (mantenido del original) -->
     <?php include '../preloader.php';?>
+    <?php include '../header.php'; ?>
+
     
     <!-- Sidebar Toggle Button -->
     <div class="sidebar-toggle" id="sidebarToggle">
         <i class="fas fa-bars"></i>
     </div>
 
-    <!-- Sidebar Navigation -->
-    <div class="sidebar" id="sidebar">
-        <div class="logo-container">
-            <div class="logo">
-                <img src="../../images/logo.webp" alt="Logo de Our Center">
-                <div class="logo-text" style="
-    margin-left: 10px;">OUR CENTER</div>
-                <!-- <div class="logo-short">OC</div> -->
-            </div>
-        </div>
-        
-        <ul class="nav flex-column mt-3">
-            <li class="nav-item">
-                <a class="nav-link" href="/ourcenter/templates/dashboard.php">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span class="nav-text">Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="/ourcenter/templates/admin/Usuarios.php">
-                    <i class="fas fa-users"></i>
-                    <span class="nav-text">Usuarios</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/ourcenter/templates/admin/cursos.php">
-                    <i class="fas fa-book"></i>
-                    <span class="nav-text">Cursos</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/ourcenter/templates/admin/inscripciones.php">
-                    <i class="fas fa-user-graduate"></i>
-                    <span class="nav-text">Inscripciones</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/ourcenter/templates/admin/pagos.php">
-                    <i class="fas fa-credit-card"></i>
-                    <span class="nav-text">Pagos</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/ourcenter/templates/admin/solicitudes.php">
-                    <i class="fas fa-envelope"></i>
-                    <span class="nav-text">Solicitudes</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/ourcenter/templates/admin/reportes.php">
-                    <i class="fas fa-chart-bar"></i>
-                    <span class="nav-text">Reportes</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/ourcenter/templates/admin/configuracion.php">
-                    <i class="fas fa-cog"></i>
-                    <span class="nav-text">Configuración</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-        
-        <!-- Notificaciones Alert Box -->
-        <div class="alert-box" id="alertBox">
-            <div class="alert-header">
-                <span>Notificaciones</span>
-                <i class="fas fa-times" id="closeAlertBox" style="cursor: pointer;"></i>
-            </div>
-            <div class="alert-body">
-                <div class="alert-message">
-                    <div class="d-flex justify-content-between mb-1">
-                        <strong><span class="status-indicator status-new"></span> Nueva solicitud</strong>
-                        <small class="text-muted">Hace 10 min</small>
-                    </div>
-                    <p class="mb-0">María González está interesada en Teen English</p>
-                </div>
-                <div class="alert-message">
-                    <div class="d-flex justify-content-between mb-1">
-                        <strong><span class="status-indicator status-process"></span> Pago pendiente</strong>
-                        <small class="text-muted">Hace 2 horas</small>
-                    </div>
-                    <p class="mb-0">Carlos Pérez tiene un pago pendiente de vencimiento</p>
-                </div>
-            </div>
-        </div>
-<?php include '../header.php'; ?>
+   <?php 
+   // Estadísticas básicas
+$stmt_stats = $pdo->query("SELECT 
+COUNT(*) as total_usuarios,
+SUM(CASE WHEN estado = 'activo' THEN 1 ELSE 0 END) as usuarios_activos,
+SUM(CASE WHEN estado = 'inactivo' THEN 1 ELSE 0 END) as usuarios_inactivos,
+SUM(CASE WHEN estado = 'pendiente' THEN 1 ELSE 0 END) as usuarios_pendientes
+FROM usuarios");
 
-<!-- <div class="main-content" id="mainContent"> -->
-    <div class="container-fluid mt-4 px-4">
-        <!-- Loading Overlay -->
-        <div class="loading-overlay" id="loadingOverlay">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando...</span>
-            </div>
-        </div>
-        
-        <!-- Page Heading -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="page-title" style="color: black;">Gestión de Usuarios</h1>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoUsuarioModal">
-                <i class="fas fa-user-plus me-2"></i>Nuevo Usuario
-            </button>
-        </div>
+if ($stmt_stats) {
+$stats = $stmt_stats->fetch(PDO::FETCH_ASSOC);
+} else {
+// Manejo de error
+die("Error en la consulta SQL: " . implode(" ", $pdo->errorInfo()));
+}
 
+   ?>
         <!-- Statistics Cards -->
         <div class="row mb-4">
             <div class="col-xl-3 col-md-6 mb-4">
@@ -687,74 +598,92 @@ $roles = $stmt_roles->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
     
-    <!-- Modal Ver Usuario -->
-    <div class="modal fade" id="verUsuarioModal" tabindex="-1" aria-labelledby="verUsuarioModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title" id="verUsuarioModalLabel">
-                        <i class="fas fa-user me-2"></i>Detalles del Usuario
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+   <!-- Modal Ver Usuario -->
+<div class="modal fade" id="verUsuarioModal" tabindex="-1" aria-labelledby="verUsuarioModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="verUsuarioModalLabel">
+                    <i class="fas fa-user me-2"></i>Detalles del Usuario
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <div class="avatar-preview mx-auto mb-3"
+                        style="width: 100px; height: 100px; background-color: #f0f2f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; color: #4e73df;">
+                        <span id="userInitial"></span>
+                    </div>
+                    <h5 id="userName" class="mb-0"></h5>
+                    <p id="userEmail" class="text-muted"></p>
+                    <span id="userStatus" class="estado-badge"></span>
                 </div>
-                <div class="modal-body">
-                    <div class="text-center mb-4">
-                        <div class="avatar-preview mx-auto mb-3" style="width: 100px; height: 100px; background-color: #f0f2f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; color: #4e73df;">
-                            <span id="userInitial"></span>
+
+                <div class="mb-3">
+                    <h6 class="text-uppercase text-muted mb-2">
+                        <i class="fas fa-id-card me-2"></i>Información Personal
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <p class="mb-1 text-muted small">Documento</p>
+                            <p id="userDocument" class="mb-0">-</p>
                         </div>
-                        <h5 id="userName" class="mb-0"></h5>
-                        <p id="userEmail" class="text-muted"></p>
-                        <span id="userStatus" class="estado-badge"></span>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <h6 class="text-uppercase text-muted mb-2"><i class="fas fa-id-card me-2"></i>Información Personal</h6>
-                        <div class="row">
-                            <div class="col-md-6 mb-2">
-                                <p class="mb-1 text-muted small">Documento</p>
-                                <p id="userDocument" class="mb-0">-</p>
-                            </div>
-                            <div class="col-md-6 mb-2">
-                                <p class="mb-1 text-muted small">Rol</p>
-                                <p id="userRole" class="mb-0">-</p>
-                            </div>
+                        <div class="col-md-6 mb-2">
+                            <p class="mb-1 text-muted small">Rol</p>
+                            <p id="userRole" class="mb-0">-</p>
                         </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <h6 class="text-uppercase text-muted mb-2"><i class="fas fa-map-marker-alt me-2"></i>Dirección</h6>
-                        <p id="userAddress" class="mb-1">-</p>
-                        <p id="userCity" class="mb-0">-</p>
-                    </div>
-                    
-                    <div>
-                        <h6 class="text-uppercase text-muted mb-2"><i class="fas fa-calendar-alt me-2"></i>Información Adicional</h6>
-                        <div class="row">
-                            <div class="col-md-6 mb-2">
-                                <p class="mb-1 text-muted small">Fecha de Registro</p>
-                                <p id="userCreationDate" class="mb-0">-</p>
-                            </div>
-                            <div class="col-md-6 mb-2">
-                                <p class="mb-1 text-muted small">Última Sesión</p>
-                                <p id="userLastLogin" class="mb-0">-</p>
-                            </div>
+                        <div class="col-md-6 mb-2">
+                            <p class="mb-1 text-muted small">Teléfono</p>
+                            <p id="userPhone" class="mb-0">-</p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <p class="mb-1 text-muted small">Fecha de Nacimiento</p>
+                            <p id="userBirthdate" class="mb-0">-</p>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                    <a href="#" id="editUserBtn" class="btn btn-warning text-white">
-                        <i class="fas fa-edit me-1"></i>Editar
-                    </a>
+
+                <div class="mb-3">
+                    <h6 class="text-uppercase text-muted mb-2">
+                        <i class="fas fa-map-marker-alt me-2"></i>Dirección
+                    </h6>
+                    <p id="userAddress" class="mb-1">-</p>
+                    <p id="userCity" class="mb-0">-</p>
                 </div>
+
+                <div>
+                    <h6 class="text-uppercase text-muted mb-2">
+                        <i class="fas fa-calendar-alt me-2"></i>Información Adicional
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <p class="mb-1 text-muted small">Fecha de Registro</p>
+                            <p id="userCreationDate" class="mb-0">-</p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <p class="mb-1 text-muted small">Última Sesión</p>
+                            <p id="userLastLogin" class="mb-0">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <a href="#" id="editUserBtn" class="btn btn-warning text-white">
+                    <i class="fas fa-edit me-1"></i>Editar
+                </a>
             </div>
         </div>
     </div>
+</div>
+
     
     <?php include '../footer.php'; ?>
 </div>
 
 <!-- JavaScript Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -841,8 +770,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Aquí realizarías una petición AJAX para obtener los datos del usuario
             // Simulamos los datos para este ejemplo
-            fetch('get_usuario.php?id=' + userId)
-                .then(response => response.json())
+            fetch('/ourcenter/templates/admin/actions/get_usuario.php?id=' + userId)
+            .then(response => response.json())
                 .then(data => {
                     // Rellenar datos en el modal
                     document.getElementById('userInitial').textContent = data.nombre.charAt(0).toUpperCase();

@@ -1,5 +1,6 @@
 <?php
 include($_SERVER['DOCUMENT_ROOT'] . '/ourcenter/config/init.php');
+$current_page = 'Activar cuenta'; // Nombre de la página actual
 /**
  * activar_cuenta.php - Procesa la activación de cuentas de usuario
  */
@@ -166,3 +167,8 @@ include __DIR__ . '/../templates/header.php';
 </div>
 
 <?php include __DIR__ . '/../templates/footer.php'; ?>
+<style>
+    .main-content {
+     margin-left: 0px;
+    }
+</style>

@@ -1,0 +1,517 @@
+<?php
+include($_SERVER['DOCUMENT_ROOT'] . '/ourcenter/config/init.php');
+require_once '../../config/db.php';
+
+// Obtener lista de todos los administradores
+$stmt = $pdo->prepare("
+    SELECT u.id, u.nombre, u.apellido, u.email, u.telefono, u.fecha_creacion,
+           u.ultima_sesion, u.estado
+    FROM usuarios u
+    WHERE u.rol_id = 1
+    ORDER BY u.fecha_creacion DESC
+");
+$stmt->execute();
+$administradores = $stmt->fetchAll();
+
+// Obtener estadísticas del sistema
+$stmt_stats = $pdo->prepare("
+    SELECT 
+        (SELECT COUNT(*) FROM usuarios WHERE rol_id = 2) as total_estudiantes,
+        (SELECT COUNT(*) FROM usuarios WHERE rol_id = 3) as total_profesores,
+        (SELECT COUNT(*) FROM cursos) as total_cursos,
+        (SELECT COUNT(*) FROM inscripciones) as total_inscripciones
+");
+$stmt_stats->execute();
+$stats = $stmt_stats->fetch();
+?>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administradores - Our Center</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Favicon -->
+    <link rel="icon" href="../images/favicon/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="../images/favicon/android-chrome-512x512.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="../images/favicon/site.webmanifest">
+    <meta name="theme-color" content="#0a1b5c">
+    <link rel="stylesheet" href="../css/dashboard.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --primary-color-light: rgba(78, 115, 223, 0.1);
+            --success-color: #1cc88a;
+            --success-color-light: rgba(28, 200, 138, 0.1);
+            --info-color: #36b9cc;
+            --info-color-light: rgba(54, 185, 204, 0.1);
+            --warning-color: #f6c23e;
+            --warning-color-light: rgba(246, 194, 62, 0.1);
+            --danger-color: #e74a3b;
+            --light-bg: #f8f9fc;
+            --dark-bg: #5a5c69;
+            --border-color: #e3e6f0;
+            --text-muted: #858796;
+            --shadow: 0 .15rem 1.75rem 0 rgba(58,59,69,.15);
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: "Nunito",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+        }
+
+        .page-content {
+            padding: 30px;
+            background-color: var(--light-bg);
+            min-height: calc(100vh - 60px);
+        }
+
+        .card-header {
+            background-color: var(--light-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .btn-floating {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        .table {
+            color: var(--dark-bg);
+        }
+
+        .table th {
+            border-top: none;
+            font-weight: 800;
+            font-size: .65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, var(--danger-color), #f56565);
+            color: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .action-buttons .btn {
+            margin: 0 2px;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+        }
+
+        .admin-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--danger-color), #f56565);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .system-stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <?php include '../preloader.php';?>
+    <?php include '../header.php'; ?>
+
+    <!-- Sidebar Toggle Button -->
+    <div class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="container-fluid">
+        <div class="page-content">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0 text-gray-800">
+                    <i class="fas fa-user-shield me-2"></i>Gestión de Administradores
+                </h1>
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalNuevoAdmin">
+                    <i class="fas fa-plus me-1"></i>Nuevo Administrador
+                </button>
+            </div>
+
+            <!-- Estadísticas del Sistema -->
+            <div class="system-stats">
+                <h5 class="mb-3">
+                    <i class="fas fa-chart-line me-2"></i>Estadísticas del Sistema
+                </h5>
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h3><?= $stats['total_estudiantes'] ?></h3>
+                        <p class="mb-0">Estudiantes</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h3><?= $stats['total_profesores'] ?></h3>
+                        <p class="mb-0">Profesores</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h3><?= $stats['total_cursos'] ?></h3>
+                        <p class="mb-0">Cursos</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h3><?= $stats['total_inscripciones'] ?></h3>
+                        <p class="mb-0">Inscripciones</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card stats-card h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                        Total Administradores
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold">
+                                        <?= count($administradores) ?>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-user-shield fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Administradores Activos
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        <?= count(array_filter($administradores, function($a) { return $a['estado'] == 'activo'; })) ?>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-check-circle fa-2x text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Sesiones Hoy
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        <?= count(array_filter($administradores, function($a) { 
+                                            return $a['ultima_sesion'] && date('Y-m-d', strtotime($a['ultima_sesion'])) == date('Y-m-d'); 
+                                        })) ?>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-clock fa-2x text-info"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de administradores -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-danger">
+                        <i class="fas fa-table me-2"></i>Lista de Administradores
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="tabla-administradores">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Email</th>
+                                    <th>Teléfono</th>
+                                    <th>Estado</th>
+                                    <th>Último Acceso</th>
+                                    <th>Fecha Registro</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($administradores as $admin): ?>
+                                    <tr>
+                                        <td><?= $admin['id'] ?></td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="admin-avatar me-2">
+                                                    <?= strtoupper(substr($admin['nombre'], 0, 1) . substr($admin['apellido'], 0, 1)) ?>
+                                                </div>
+                                                <div>
+                                                    <strong><?= htmlspecialchars($admin['nombre'] . ' ' . $admin['apellido']) ?></strong>
+                                                    <br>
+                                                    <small class="text-muted">Administrador</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><?= htmlspecialchars($admin['email']) ?></td>
+                                        <td><?= htmlspecialchars($admin['telefono']) ?></td>
+                                        <td>
+                                            <?php if ($admin['estado'] == 'activo'): ?>
+                                                <span class="badge bg-success">Activo</span>
+                                            <?php else: ?>
+                                                <span class="badge bg-danger">Inactivo</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <?php if ($admin['ultima_sesion']): ?>
+                                                <?= date('d/m/Y H:i', strtotime($admin['ultima_sesion'])) ?>
+                                                <?php if (date('Y-m-d', strtotime($admin['ultima_sesion'])) == date('Y-m-d')): ?>
+                                                    <span class="badge bg-success ms-1">Hoy</span>
+                                                <?php endif; ?>
+                                            <?php else: ?>
+                                                <span class="text-muted">Nunca</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?= date('d/m/Y', strtotime($admin['fecha_creacion'])) ?></td>
+                                        <td class="action-buttons">
+                                            <button class="btn btn-info btn-sm" onclick="verAdmin(<?= $admin['id'] ?>)" title="Ver detalles">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-warning btn-sm" onclick="editarAdmin(<?= $admin['id'] ?>)" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <?php if ($admin['estado'] == 'activo'): ?>
+                                                <button class="btn btn-secondary btn-sm" onclick="desactivarAdmin(<?= $admin['id'] ?>)" title="Desactivar">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            <?php else: ?>
+                                                <button class="btn btn-success btn-sm" onclick="activarAdmin(<?= $admin['id'] ?>)" title="Activar">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nuevo Administrador -->
+    <div class="modal fade" id="modalNuevoAdmin" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Registrar Nuevo Administrador</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formNuevoAdmin">
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Atención:</strong> Los administradores tienen acceso completo al sistema.
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nombre</label>
+                                <input type="text" class="form-control" name="nombre" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Apellido</label>
+                                <input type="text" class="form-control" name="apellido" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" name="telefono" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nivel de Acceso</label>
+                            <select class="form-control" name="nivel_acceso" required>
+                                <option value="">Seleccionar nivel</option>
+                                <option value="super_admin">Super Administrador</option>
+                                <option value="admin">Administrador</option>
+                                <option value="moderador">Moderador</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" name="password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confirmar Contraseña</label>
+                            <input type="password" class="form-control" name="password_confirm" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Registrar Administrador</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Inicializar DataTable
+            $('#tabla-administradores').DataTable({
+                "language": {
+                    "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                },
+                "pageLength": 10,
+                "order": [[0, "desc"]]
+            });
+
+            // Formulario nuevo administrador
+            $('#formNuevoAdmin').on('submit', function(e) {
+                e.preventDefault();
+                
+                // Validar contraseñas
+                const password = $('input[name="password"]').val();
+                const passwordConfirm = $('input[name="password_confirm"]').val();
+                
+                if (password !== passwordConfirm) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Las contraseñas no coinciden',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+                
+                // Aquí iría la lógica para enviar los datos del formulario
+                Swal.fire({
+                    title: 'Administrador registrado',
+                    text: 'El administrador ha sido registrado exitosamente',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    location.reload();
+                });
+            });
+        });
+
+        function verAdmin(id) {
+            Swal.fire({
+                title: 'Detalles del Administrador',
+                html: 'Aquí se mostrarían los detalles completos del administrador ID: ' + id,
+                icon: 'info',
+                confirmButtonText: 'Cerrar'
+            });
+        }
+
+        function editarAdmin(id) {
+            Swal.fire({
+                title: 'Editar Administrador',
+                html: 'Aquí se abriría el formulario de edición para el administrador ID: ' + id,
+                icon: 'info',
+                confirmButtonText: 'Cerrar'
+            });
+        }
+
+        function desactivarAdmin(id) {
+            Swal.fire({
+                title: '¿Desactivar administrador?',
+                text: 'El administrador no podrá acceder al sistema',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, desactivar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Aquí iría la lógica para desactivar
+                    Swal.fire('Desactivado', 'El administrador ha sido desactivado', 'success');
+                }
+            });
+        }
+
+        function activarAdmin(id) {
+            Swal.fire({
+                title: '¿Activar administrador?',
+                text: 'El administrador podrá acceder al sistema',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, activar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Aquí iría la lógica para activar
+                    Swal.fire('Activado', 'El administrador ha sido activado', 'success');
+                }
+            });
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

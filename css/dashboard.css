@@ -101,7 +101,7 @@ body.sidebar-hidden .sidebar {
         /* Main content */
         .main-content {
             margin-left: 250px;
-            padding: 20px;
+            /* padding: 20px; */
             transition: margin-left 0.3s ease;
         }
 
