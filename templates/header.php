@@ -319,10 +319,6 @@ function getTimeAgo($datetime) {
     <!-- Navbar superior -->
     <nav class="navbar navbar-expand-lg navbar-dark py-2 px-3 shadow-sm" style="padding: 24px !important; background-color: #0a1b5c !important;">
         <div class="container-fluid px-0">
-            <!-- Botón para mostrar/ocultar sidebar -->
-            <button id="sidebar-toggle" class="btn btn-sm btn-link text-white d-lg-none me-2" onclick="toggleSidebar()">
-                <i class="fas fa-bars fa-lg"></i>
-            </button>
             
             <!-- Título de la página -->
             <div class="d-flex align-items-center">
@@ -437,7 +433,7 @@ function getTimeAgo($datetime) {
                         <li><a class="dropdown-item" href="configuracion.php"><i class="fas fa-cog me-2"></i>Configuración</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="ayuda.php"><i class="fas fa-question-circle me-2"></i>Ayuda</a></li>
-                        <li><a class="dropdown-item text-danger" href="../../server/logout.php"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
+                        <li><a class="dropdown-item text-danger" href="/ourcenter/server/logout.php"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
                     </ul>
                 </li>
             </ul>

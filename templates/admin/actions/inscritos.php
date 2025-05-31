@@ -84,6 +84,11 @@ $inscritos = $stmt->fetchAll();
             background-color: var(--light-bg);
             min-height: calc(100vh - 60px);
         }
+        @media (max-width: 768px) {
+    .page-content {
+        padding: 10px;
+    }
+}
 
         .card-header {
             background-color: var(--light-bg);

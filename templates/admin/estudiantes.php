@@ -69,6 +69,11 @@ $estudiantes = $stmt->fetchAll();
             background-color: var(--light-bg);
             min-height: calc(100vh - 60px);
         }
+        @media (max-width: 768px) {
+    .page-content {
+        padding: 10px;
+    }
+}
 
         .card-header {
             background-color: var(--light-bg);
@@ -89,7 +94,7 @@ $estudiantes = $stmt->fetchAll();
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             z-index: 100;
         }
-
+        
         .table {
             color: var(--dark-bg);
         }
@@ -117,6 +122,9 @@ $estudiantes = $stmt->fetchAll();
             margin: 0 2px;
             padding: 5px 10px;
             font-size: 0.75rem;
+        }
+        .navbar-nav .dropdown-menu{
+            position: absolute !important;
         }
     </style>
 </head>
@@ -293,6 +301,7 @@ $estudiantes = $stmt->fetchAll();
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -304,7 +313,208 @@ $estudiantes = $stmt->fetchAll();
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <script>
+                document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const body = document.body;
 
+            const sidebarOverlay = document.createElement('div');
+            sidebarOverlay.className = 'sidebar-overlay';
+            document.body.appendChild(sidebarOverlay);
+
+            function toggleSidebar() {
+                sidebar.classList.toggle('show');
+                body.classList.toggle('sidebar-hidden');
+                if (window.innerWidth < 768) {
+                    sidebarOverlay.classList.toggle('active');
+                }
+            }
+
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', toggleSidebar);
+            }
+
+            sidebarOverlay.addEventListener('click', function() {
+                if (sidebar.classList.contains('show') && window.innerWidth < 768) {
+                    toggleSidebar();
+                }
+            });
+
+            function adjustForScreenSize() {
+                if (window.innerWidth < 768) {
+                    sidebar.classList.remove('show');
+                    body.classList.add('sidebar-hidden');
+                    mainContent.style.marginLeft = '0';
+                } else {
+                    if (!body.classList.contains('sidebar-hidden-by-user')) {
+                        sidebar.classList.add('show');
+                        body.classList.remove('sidebar-hidden');
+                    }
+                }
+            }
+
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    if (window.innerWidth >= 768) {
+                        if (sidebar.classList.contains('show')) {
+                            body.classList.remove('sidebar-hidden-by-user');
+                        } else {
+                            body.classList.add('sidebar-hidden-by-user');
+                        }
+                    }
+                });
+            }
+
+            window.addEventListener('load', adjustForScreenSize);
+            window.addEventListener('resize', adjustForScreenSize);
+
+            const notificationsBtn = document.getElementById('notificationsBtn');
+            const alertBox = document.getElementById('alertBox');
+            const closeAlertBox = document.getElementById('closeAlertBox');
+
+            if (notificationsBtn && alertBox) {
+                notificationsBtn.addEventListener('click', function() {
+                    alertBox.classList.toggle('show');
+                });
+
+                if (closeAlertBox) {
+                    closeAlertBox.addEventListener('click', function() {
+                        alertBox.classList.remove('show');
+                    });
+                }
+
+                document.addEventListener('click', function(event) {
+                    if (!alertBox.contains(event.target) && event.target !== notificationsBtn) {
+                        alertBox.classList.remove('show');
+                    }
+                });
+            }
+
+            const taskCheckboxes = document.querySelectorAll('.task-checkbox');
+            taskCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const taskItem = this.closest('.task-item');
+                    if (this.checked) {
+                        taskItem.style.opacity = '0.6';
+                        setTimeout(() => {
+                            taskItem.style.transform = 'translateX(10px)';
+                        }, 100);
+                    } else {
+                        taskItem.style.opacity = '1';
+                        taskItem.style.transform = 'translateX(0)';
+                    }
+                });
+            });
+
+            const paymentRows = document.querySelectorAll('.payment-row');
+            paymentRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(5px)';
+                });
+
+                row.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateX(0)';
+                });
+            });
+
+            const cards = document.querySelectorAll('.card');
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const cardObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationDelay = Math.random() * 0.3 + 's';
+                        entry.target.classList.add('animate-in');
+                    }
+                });
+            }, observerOptions);
+
+            cards.forEach(card => {
+                cardObserver.observe(card);
+            });
+
+            if (typeof Chart !== 'undefined') {
+                const resumenChart = document.getElementById('resumenChart');
+                if (resumenChart) {
+                    const resumenCtx = resumenChart.getContext('2d');
+                    new Chart(resumenCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'],
+                            datasets: [{
+                                label: 'Inscripciones',
+                                data: [12, 19, 10, 15, 22],
+                                backgroundColor: 'rgba(78, 115, 223, 0.2)',
+                                borderColor: 'rgba(78, 115, 223, 1)',
+                                borderWidth: 2,
+                                tension: 0.3
+                            }, {
+                                label: 'Ingresos (x100€)',
+                                data: [30, 45, 22, 37, 48],
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                borderColor: 'rgba(231, 76, 60, 1)',
+                                borderWidth: 2,
+                                tension: 0.3
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                }
+                            }
+                        }
+                    });
+                }
+
+                const pagosChart = document.getElementById('pagosChart');
+                if (pagosChart) {
+                    const pagosCtx = pagosChart.getContext('2d');
+                    new Chart(pagosCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Completados', 'Pendientes', 'Fallidos'],
+                            datasets: [{
+                                data: [75, 20, 5],
+                                backgroundColor: [
+                                    'rgba(28, 200, 138, 0.8)',
+                                    'rgba(246, 194, 62, 0.8)',
+                                    'rgba(231, 76, 60, 0.8)'
+                                ],
+                                borderColor: [
+                                    'rgba(28, 200, 138, 1)',
+                                    'rgba(246, 194, 62, 1)',
+                                    'rgba(231, 76, 60, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    </script>
     <script>
         $(document).ready(function() {
             // Inicializar DataTable
