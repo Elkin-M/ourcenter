@@ -23,7 +23,7 @@ $stmt_stats = $pdo->prepare("
     SELECT 
         COUNT(DISTINCT u.id) as total_profesores,
         COUNT(DISTINCT s.id) as total_salones,
-        COUNT(DISTINCT cs.curso_id) as total_cursos_con_salon,
+        COUNT(DISTINCT cs.id) as total_cursos_con_salon,
         COUNT(DISTINCT CASE WHEN s.id IS NOT NULL THEN u.id END) as profesores_con_salon
     FROM usuarios u
     LEFT JOIN salones s ON u.id = s.teacher_id
@@ -146,14 +146,18 @@ $stats = $stmt_stats->fetch();
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--success-color), #36d59e);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background-color: #4e73df;
             color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 16px;
+            text-transform: uppercase;
+            flex-shrink: 0;
         }
+
+
 
         .salon-badge {
             display: inline-block;
@@ -241,8 +245,9 @@ $stats = $stmt_stats->fetch();
                                         Cursos Conectados
                                     </div>
                                     <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                        <?= $stats['total_cursos_con_salon'] ?>
+                                        <?= $stats['total_cursos_con_salon'] ?? 0 ?>
                                     </div>
+
                                 </div>
                                 <div class="col-auto">
                                     <i class="fas fa-book fa-2x text-warning"></i>
@@ -261,7 +266,7 @@ $stats = $stmt_stats->fetch();
                                         Profesores Activos
                                     </div>
                                     <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                        <?= $stats['profesores_con_salon'] ?>
+                                        <?= $stats['profesores_con_salon']?? 0 ?>       
                                     </div>
                                 </div>
                                 <div class="col-auto">
@@ -302,9 +307,10 @@ $stats = $stmt_stats->fetch();
                                         <td><?= $profesor['id'] ?></td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <div class="professor-avatar me-2">
-                                                    <?= strtoupper(substr($profesor['nombre'], 0, 1) . substr($profesor['apellido'], 0, 1)) ?>
-                                                </div>
+                                            <div class="me-2 professor-avatar">
+                                                <?= strtoupper(substr($profesor['nombre'], 0, 1) . substr($profesor['apellido'], 0, 1)) ?>
+                                            </div>
+
                                                 <div>
                                                     <strong><?= htmlspecialchars($profesor['nombre'] . ' ' . $profesor['apellido']) ?></strong>
                                                     <br>

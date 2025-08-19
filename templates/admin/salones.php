@@ -71,7 +71,7 @@ $stmt = $pdo->prepare("
     FROM salones s
     LEFT JOIN usuarios u ON s.teacher_id = u.id
     LEFT JOIN cursos c ON s.curso_id = c.id
-    LEFT JOIN usuarios us ON us.salon_id = s.id
+    LEFT JOIN usuarios us ON us.id = s.id
     GROUP BY s.id
     ORDER BY s.fecha_creacion DESC
 ");

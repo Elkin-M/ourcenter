@@ -81,7 +81,7 @@
         }
         /* Ajustar posición del botón cuando el sidebar está expandido */
         body:not(.sidebar-hidden) .sidebar-toggle {
-            left: 265px;
+            left: 265px !important;
         }
         @media (max-width: 767.98px) {
     .sidebar-toggle {

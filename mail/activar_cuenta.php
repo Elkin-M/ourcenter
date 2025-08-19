@@ -96,7 +96,7 @@ if (isset($_GET['token']) && !empty($_GET['token'])) {
     $messageType = 'danger';
 }
 
-include __DIR__ . '/../templates/header.php';
+include __DIR__ . '/../templates/header2.php';
 ?>
 
 <div class="container mt-5">

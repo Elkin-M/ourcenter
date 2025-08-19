@@ -1,90 +1,88 @@
 <?php
-include($_SERVER['DOCUMENT_ROOT'] . '/ourcenter/config/init.php');
-
-require_once '../../config/db.php';
+// Configuración de la página
 $current_page = 'Usuarios';
-$page_title = "Usuarios";
+$page_title = "Gestión de Usuarios";
 $breadcrumb = [
-    ['title' => 'Administracion']
+    ['title' => 'Dashboard', 'url' => '/ourcenter/templates/dashboard.php'],
+    ['title' => 'Usuarios']
 ];
 
-// Paginación
+// Incluir el header primero (antes de cualquier salida HTML)
+include_once '../header.php';
+
+// Procesar datos después del header
+require_once '../../config/db.php';
+
+
+// Parámetros de paginación
 $registros_por_pagina = 10;
 $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-$inicio = ($pagina - 1) * $registros_por_pagina;
+$offset = ($pagina - 1) * $registros_por_pagina;
 
 // Búsqueda
-$busqueda = isset($_GET['busqueda']) ? $_GET['busqueda'] : '';
-$where = '';
+$busqueda = isset($_GET['busqueda']) ? trim($_GET['busqueda']) : '';
+$where = "WHERE rol_id = 2";
+$params = [];
+
 if (!empty($busqueda)) {
-    $where = " WHERE nombre LIKE :busqueda OR email LIKE :busqueda OR apellido LIKE :busqueda";
+    $where .= " AND (nombre LIKE ? OR email LIKE ? OR apellido LIKE ?)";
+    $params = ["%$busqueda%", "%$busqueda%", "%$busqueda%"];
 }
 
-// Contar total de registros para la paginación
-$sql_total = "SELECT COUNT(*) FROM usuarios" . $where;
+// Contar total de registros
+$sql_total = "SELECT COUNT(*) FROM usuarios " . $where;
 $stmt_total = $pdo->prepare($sql_total);
-if (!empty($busqueda)) {
-    $stmt_total->bindValue(':busqueda', "%$busqueda%", PDO::PARAM_STR);
-}
-$stmt_total->execute();
+$stmt_total->execute($params);
 $total_registros = $stmt_total->fetchColumn();
 $total_paginas = ceil($total_registros / $registros_por_pagina);
 
-// Consulta principal con paginación y búsqueda
-$sql = "SELECT u.id, u.nombre, u.apellido, u.email, u.estado, u.fecha_creacion, r.nombre as rol_nombre 
-        FROM usuarios u 
-        JOIN roles r ON u.rol_id = r.id" . $where . " 
-        ORDER BY u.id DESC 
-        LIMIT :inicio, :registros_por_pagina";
+// Obtener estudiantes
+$stmt = $pdo->prepare("
+    SELECT 
+        u.id, 
+        u.nombre, 
+        u.apellido, 
+        u.email, 
+        u.telefono, 
+        u.fecha_creacion,
+        u.rol_id,
+        u.estado,
+        CASE 
+            WHEN u.rol_id = 1 THEN 'Administrador'
+            WHEN u.rol_id = 2 THEN 'Estudiante'
+            WHEN u.rol_id = 3 THEN 'Profesor'
+            ELSE 'Desconocido'
+        END AS rol_nombre,
+        COUNT(i.id) AS cursos_inscritos
+    FROM usuarios u
+    LEFT JOIN inscripciones i ON u.id = i.usuario_id
+    GROUP BY u.id
+    ORDER BY u.fecha_creacion DESC
+    LIMIT ? OFFSET ?
+");
 
-$stmt = $pdo->prepare($sql);
-if (!empty($busqueda)) {
-    $stmt->bindValue(':busqueda', "%$busqueda%", PDO::PARAM_STR);
-}
-$stmt->bindValue(':inicio', $inicio, PDO::PARAM_INT);
-$stmt->bindValue(':registros_por_pagina', $registros_por_pagina, PDO::PARAM_INT);
-$stmt->execute();
-$usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-
+$all_params = array_merge($params, [$registros_por_pagina, $offset]);
+$stmt->execute($all_params);
+$usuarios = $stmt->fetchAll();
 
 // Obtener roles para filtrar
 $stmt_roles = $pdo->query("SELECT id, nombre FROM roles ORDER BY nombre");
 $roles = $stmt_roles->fetchAll(PDO::FETCH_ASSOC);
+
+// CSS específico para esta página
+$page_css = [
+    'https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css',
+    'https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css'
+];
+
+// Scripts específicos para esta página
+$page_head_scripts = [
+    'https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js'
+];
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Gestión de Usuarios - Our Center</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- Favicon -->
-    <link rel="icon" href="../../images/favicon/favicon.ico" sizes="any">
-    <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="../../images/favicon/android-chrome-192x192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="../../images/favicon/android-chrome-512x512.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
-    <link rel="manifest" href="../../images/favicon/site.webmanifest">
-    <meta name="theme-color" content="#0a1b5c">
-    <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="/mstile-144x144.png">
-    <link rel="stylesheet" href="../../css/dashboard.css">
 
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-    
-    <!-- SweetAlert2 -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
-    
-    <style>
+<style>
         .card {
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -255,10 +253,7 @@ $roles = $stmt_roles->fetchAll(PDO::FETCH_ASSOC);
     </style>
 </head>
 <body>
-<!-- Preloader (mantenido del original) -->
-    <?php include '../preloader.php';?>
-    <?php include '../header.php'; ?>
-
+    <?php include '../preloader.php'; ?>
     
     <!-- Sidebar Toggle Button -->
     <div class="sidebar-toggle" id="sidebarToggle">
@@ -274,15 +269,15 @@ SUM(CASE WHEN estado = 'inactivo' THEN 1 ELSE 0 END) as usuarios_inactivos,
 SUM(CASE WHEN estado = 'pendiente' THEN 1 ELSE 0 END) as usuarios_pendientes
 FROM usuarios");
 
-if ($stmt_stats) {
-$stats = $stmt_stats->fetch(PDO::FETCH_ASSOC);
-} else {
-// Manejo de error
-die("Error en la consulta SQL: " . implode(" ", $pdo->errorInfo()));
-}
-
-   ?>
-        <!-- Statistics Cards -->
+            if ($stmt_stats) {
+                $stats = $stmt_stats->fetch(PDO::FETCH_ASSOC);
+            } else {
+                // Manejo de error
+                die("Error en la consulta SQL: " . implode(" ", $pdo->errorInfo()));
+            }
+            ?>
+            
+            <!-- Statistics Cards -->
         <div class="row mb-4">
             <div class="col-xl-3 col-md-6 mb-4">
                 <div class="card stat-card total h-100">
@@ -674,22 +669,17 @@ die("Error en la consulta SQL: " . implode(" ", $pdo->errorInfo()));
                 </a>
             </div>
         </div>
+        </div>
     </div>
-</div>
 
+    <!-- Scripts principales -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
     
-    <?php include '../footer.php'; ?>
-</div>
-
-<!-- JavaScript Bundle -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<!-- DataTables JS -->
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <!-- Scripts específicos de la página -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -1114,6 +1104,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-</script>
+    </script>
+
+    <!-- Scripts específicos de la página -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    
+    <?php include '../footer.php'; ?>
 </body>
 </html>

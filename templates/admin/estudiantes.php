@@ -14,6 +14,7 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute();
 $estudiantes = $stmt->fetchAll();
+date_default_timezone_set('America/Bogota');
 ?>
 
 <!DOCTYPE html>
@@ -31,9 +32,9 @@ $estudiantes = $stmt->fetchAll();
     <link rel="icon" type="image/png" sizes="512x512" href="../images/favicon/android-chrome-512x512.png">
     <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
-    <link rel="manifest" href="../images/favicon/site.webmanifest">
+    <link rel="manifest" href="/ourcenter/images/favicon/site.webmanifest">
     <meta name="theme-color" content="#0a1b5c">
-    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="/ourcenter/css/dashboard.css">
 
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
@@ -126,6 +127,29 @@ $estudiantes = $stmt->fetchAll();
         .navbar-nav .dropdown-menu{
             position: absolute !important;
         }
+        .border-left-primary {
+            border-left: 4px solid var(--primary-color) !important;
+        }
+
+        .modal-lg .card-body {
+            padding: 1rem;
+        }
+        /* Asegura que el contenido no se desborde */
+        #modalVerEstudiante .modal-body {
+            overflow-x: auto;
+            word-wrap: break-word;
+            word-break: break-word;
+            max-height: 70vh;
+            padding: 1.5rem;
+        }
+
+        /* Hace que el texto largo (como emails) no se salga */
+        #modalVerEstudiante .modal-body .text-muted {
+            overflow-wrap: break-word;
+            word-break: break-word;
+            white-space: normal;
+        }
+
     </style>
 </head>
 <body>
@@ -301,10 +325,78 @@ $estudiantes = $stmt->fetchAll();
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Modal ver Estudiante -->
+    <div class="modal fade" id="modalVerEstudiante" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-graduate me-2"></i>Detalles del Estudiante
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoVerEstudiante">
+                <!-- El contenido se carga dinámicamente -->
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Estudiante -->
+<div class="modal fade" id="modalEditarEstudiante" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Editar Estudiante
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formEditarEstudiante">
+                <div class="modal-body">
+                    <input type="hidden" id="editarEstudianteId" name="id">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="editarNombre" name="nombre" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Apellido</label>
+                            <input type="text" class="form-control" id="editarApellido" name="apellido" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editarEmail" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teléfono</label>
+                        <input type="tel" class="form-control" id="editarTelefono" name="telefono" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nueva Contraseña (dejar en blanco para mantener la actual)</label>
+                        <input type="password" class="form-control" id="editarPassword" name="password" placeholder="Opcional">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Actualizar Estudiante</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 
     <!-- DataTables JS -->
@@ -542,22 +634,217 @@ $estudiantes = $stmt->fetchAll();
         });
 
         function verEstudiante(id) {
-            Swal.fire({
-                title: 'Detalles del Estudiante',
-                html: 'Aquí se mostrarían los detalles completos del estudiante ID: ' + id,
-                icon: 'info',
-                confirmButtonText: 'Cerrar'
-            });
-        }
+            
+    if (!id) {
+        console.error("ID inválido:", id);
+        return;
+    }
 
-        function editarEstudiante(id) {
+    // Mostrar el modal
+    $('#modalVerEstudiante').modal('show');
+
+    // Realizar petición AJAX para obtener los detalles
+    $.ajax({
+        url: '/ourcenter/templates/admin/ajax/obtener_estudiante.php',
+        type: 'POST',
+        data: { id_estudiante: id },
+        dataType: 'json',
+        success: function(response) {
+
+            if (response.success) {
+                const estudiante = response.estudiante;
+                const inscripciones = response.inscripciones || [];
+
+                let contenido = `
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-4">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px; font-size: 24px;">
+                                ${estudiante.nombre.charAt(0).toUpperCase()}${estudiante.apellido.charAt(0).toUpperCase()}
+                            </div>
+                            <h5 class="mt-3 mb-1">${estudiante.nombre} ${estudiante.apellido}</h5>
+                            <p class="text-muted">Estudiante</p>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <strong>Email:</strong><br>
+                                    <span class="text-muted">${estudiante.email}</span>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <strong>Teléfono:</strong><br>
+                                    <span class="text-muted">${estudiante.telefono}</span>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <strong>Dirección:</strong><br>
+                                    <span class="text-muted">${estudiante.direccion || 'No especificada'}</span>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <strong>Documento:</strong><br>
+                                    <span class="text-muted">${estudiante.tipo_documento || 'No especificado'} : ${estudiante.documento_identidad || 'No especificado'}</span>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <strong>Fecha de nacimiento:</strong><br>
+                                    <span class="text-muted">${formatearFechaYMDaDMY(estudiante.fecha_nacimiento)}</span>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <strong>Fecha de registro:</strong><br>
+                                    <span class="text-muted">${estudiante.fecha_creacion ? new Date(estudiante.fecha_creacion).toLocaleDateString('es-ES') : 'No disponible'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="mb-3">
+                        <i class="fas fa-book me-2"></i>Cursos Inscritos (${inscripciones.length})
+                    </h6>
+
+                    <div class="row">
+                `;
+
+                if (inscripciones.length > 0) {
+                    inscripciones.forEach(inscripcion => {
+                        contenido += `
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-left-primary h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title">${inscripcion.curso_nombre}</h6>
+                                        <p class="card-text text-muted small">${inscripcion.curso_descripcion || 'Sin descripción'}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-info">${inscripcion.estado}</span>
+                                            <small class="text-muted">Inscrito: ${new Date(inscripcion.fecha_inscripcion).toLocaleDateString('es-ES')}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    contenido += `
+                        <div class="col-12">
+                            <div class="alert alert-info text-center" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Este estudiante no tiene inscripciones activas
+                            </div>
+                        </div>
+                    `;
+                }
+
+                contenido += `</div>`;
+
+                $('#contenidoVerEstudiante').html(contenido);
+            } else {
+                $('#contenidoVerEstudiante').html(`
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error al cargar los datos del estudiante
+                    </div>
+                `);
+            }
+        },
+        error: function() {
+            $('#contenidoVerEstudiante').html(`
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Error de conexión al cargar los datos
+                </div>
+            `);
+        }
+    });
+}
+
+function formatearFechaYMDaDMY(fecha) {
+    if (!fecha) return 'No especificada';
+    const [a, m, d] = fecha.split('-');
+    return `${d}/${m}/${a}`;
+}
+
+        // Función para editar estudiante
+function editarEstudiante(id) {
+    // Realizar petición AJAX para obtener los datos actuales
+    $.ajax({
+        url: '/ourcenter/templates/admin/ajax/actualizar_estudiante.php',
+        type: 'POST',
+        data: { id: id },
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                const estudiante = response.estudiante;
+                
+                // Llenar el formulario con los datos actuales
+                $('#editarEstudianteId').val(estudiante.id);
+                $('#editarNombre').val(estudiante.nombre);
+                $('#editarApellido').val(estudiante.apellido);
+                $('#editarEmail').val(estudiante.email);
+                $('#editarTelefono').val(estudiante.telefono);
+                $('#editarPassword').val('');
+                
+                // Mostrar el modal
+                $('#modalEditarEstudiante').modal('show');
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'No se pudieron cargar los datos del estudiante',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        },
+        error: function() {
             Swal.fire({
-                title: 'Editar Estudiante',
-                html: 'Aquí se abriría el formulario de edición para el estudiante ID: ' + id,
-                icon: 'info',
-                confirmButtonText: 'Cerrar'
+                title: 'Error de conexión',
+                text: 'No se pudo conectar con el servidor',
+                icon: 'error',
+                confirmButtonText: 'OK'
             });
         }
+    });
+}
+
+// Manejar el envío del formulario de edición
+$('#formEditarEstudiante').on('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    $.ajax({
+        url: 'ajax/actualizar_estudiante.php',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                Swal.fire({
+                    title: '¡Actualizado!',
+                    text: 'Los datos del estudiante han sido actualizados exitosamente',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    $('#modalEditarEstudiante').modal('hide');
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: response.message || 'Error al actualizar el estudiante',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        },
+        error: function() {
+            Swal.fire({
+                title: 'Error de conexión',
+                text: 'No se pudo conectar con el servidor',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    });
+});
 
         function verInscripciones(id) {
             window.location.href = 'inscripciones.php?estudiante_id=' + id;

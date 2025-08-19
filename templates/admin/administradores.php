@@ -413,6 +413,76 @@ $stats = $stmt_stats->fetch();
         </div>
     </div>
 
+       <!-- Modal ver Administrador -->
+<div class="modal fade" id="modalVerAdministrador" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-graduate me-2"></i>Detalles del Administrador
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoVerEstudiante">
+                <!-- El contenido se carga dinámicamente -->
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Administrador -->
+<div class="modal fade" id="modalEditarAdministrador" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Editar Estudiante
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formEditarAdministrador">
+                <div class="modal-body">
+                    <input type="hidden" id="editarEstudianteId" name="id">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="editarNombre" name="nombre" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Apellido</label>
+                            <input type="text" class="form-control" id="editarApellido" name="apellido" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editarEmail" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teléfono</label>
+                        <input type="tel" class="form-control" id="editarTelefono" name="telefono" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nueva Contraseña (dejar en blanco para mantener la actual)</label>
+                        <input type="password" class="form-control" id="editarPassword" name="password" placeholder="Opcional">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Actualizar Estudiante</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -466,23 +536,220 @@ $stats = $stmt_stats->fetch();
             });
         });
 
-        function verAdmin(id) {
-            Swal.fire({
-                title: 'Detalles del Administrador',
-                html: 'Aquí se mostrarían los detalles completos del administrador ID: ' + id,
-                icon: 'info',
-                confirmButtonText: 'Cerrar'
-            });
-        }
+function verAdmin(id) {
+                
+    if (!id) {
+        console.error("ID inválido:", id);
+        return;
+    }
 
-        function editarAdmin(id) {
+    // Mostrar el modal
+    $('#modalVerAdministrador').modal('show');
+
+    // Realizar petición AJAX para obtener los detalles
+    $.ajax({
+        url: '/ourcenter/templates/admin/ajax/obtener_estudiante.php',
+        type: 'POST',
+        data: { id_estudiante: id },
+        dataType: 'json',
+        success: function(response) {
+
+            if (response.success) {
+                const estudiante = response.estudiante;
+                const inscripciones = response.inscripciones || [];
+
+                let contenido = `
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-4">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px; font-size: 24px;">
+                                ${estudiante.nombre.charAt(0).toUpperCase()}${estudiante.apellido.charAt(0).toUpperCase()}
+                            </div>
+                            <h5 class="mt-3 mb-1">${estudiante.nombre} ${estudiante.apellido}</h5>
+                            <p class="text-muted">Administrador</p>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <strong>Email:</strong><br>
+                                    <span class="text-muted">${estudiante.email}</span>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <strong>Teléfono:</strong><br>
+                                    <span class="text-muted">${estudiante.telefono}</span>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <strong>Dirección:</strong><br>
+                                    <span class="text-muted">${estudiante.direccion || 'No especificada'}</span>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <strong>Documento:</strong><br>
+                                    <span class="text-muted">${estudiante.tipo_documento || 'No especificado'} : ${estudiante.documento_identidad || 'No especificado'}</span>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <strong>Fecha de nacimiento:</strong><br>
+                                    <span class="text-muted">${formatearFechaYMDaDMY(estudiante.fecha_nacimiento)}</span>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <strong>Fecha de registro:</strong><br>
+                                    <span class="text-muted">${estudiante.fecha_creacion ? new Date(estudiante.fecha_creacion).toLocaleDateString('es-ES') : 'No disponible'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="mb-3">
+                        <i class="fas fa-book me-2"></i>Cursos Inscritos (${inscripciones.length})
+                    </h6>
+
+                    <div class="row">
+                `;
+
+                if (inscripciones.length > 0) {
+                    inscripciones.forEach(inscripcion => {
+                        contenido += `
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-left-primary h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title">${inscripcion.curso_nombre}</h6>
+                                        <p class="card-text text-muted small">${inscripcion.curso_descripcion || 'Sin descripción'}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-info">${inscripcion.estado}</span>
+                                            <small class="text-muted">Inscrito: ${new Date(inscripcion.fecha_inscripcion).toLocaleDateString('es-ES')}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    contenido += `
+                        <div class="col-12">
+                            <div class="alert alert-info text-center" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Este Administrador no tiene inscripciones activas
+                            </div>
+                        </div>
+                    `;
+                }
+
+                contenido += `</div>`;
+
+                $('#contenidoVerEstudiante').html(contenido);
+            } else {
+                $('#contenidoVerEstudiante').html(`
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error al cargar los datos del Administrador
+                    </div>
+                `);
+            }
+        },
+        error: function() {
+            $('#contenidoVerEstudiante').html(`
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Error de conexión al cargar los datos
+                </div>
+            `);
+        }
+    });
+}
+
+function formatearFechaYMDaDMY(fecha) {
+    if (!fecha) return 'No especificada';
+    const [a, m, d] = fecha.split('-');
+    return `${d}/${m}/${a}`;
+}
+        
+
+function editarAdmin(id) {
+    console.log("ID recibido:", id);
+            $.ajax({
+        url: '/ourcenter/templates/admin/ajax/actualizar_estudiante.php',
+        type: 'POST',
+        data: { id: id },
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                const estudiante = response.estudiante;
+                
+                // Llenar el formulario con los datos actuales
+                $('#editarEstudianteId').val(estudiante.id);
+                $('#editarNombre').val(estudiante.nombre);
+                $('#editarApellido').val(estudiante.apellido);
+                $('#editarEmail').val(estudiante.email);
+                $('#editarTelefono').val(estudiante.telefono);
+                $('#editarPassword').val('');
+                
+                // Mostrar el modal
+                $('#modalEditarAdministrador').modal('show');
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'No se pudieron cargar los datos del estudiante',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        },
+        error: function() {
             Swal.fire({
-                title: 'Editar Administrador',
-                html: 'Aquí se abriría el formulario de edición para el administrador ID: ' + id,
-                icon: 'info',
-                confirmButtonText: 'Cerrar'
+                title: 'Error de conexión',
+                text: 'No se pudo conectar con el servidor',
+                icon: 'error',
+                confirmButtonText: 'OK'
             });
         }
+    });
+}
+
+// Manejar el envío del formulario de edición
+$('#formEditarAdministrador').on('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    $.ajax({
+        url: '/ourcenter/templates/admin/ajax/actualizar_estudiante.php',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                Swal.fire({
+                    title: '¡Actualizado!',
+                    text: 'Los datos del estudiante han sido actualizados exitosamente',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    $('#modalEditarAdministrador').modal('hide');
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: response.message || 'Error al actualizar el estudiante',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        },
+        error: function() {
+            Swal.fire({
+                title: 'Error de conexión',
+                text: 'No se pudo conectar con el servidor',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    });
+});
+
+        
 
         function desactivarAdmin(id) {
             Swal.fire({

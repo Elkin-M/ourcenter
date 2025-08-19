@@ -29,13 +29,15 @@ if (!$teacher) {
 
 // Obtener estadísticas del profesor por salones
 $stats_query = "SELECT 
-    COUNT(DISTINCT s.id) as total_salones,
-    COUNT(DISTINCT CASE WHEN s.estado = 'activo' THEN s.id END) as salones_activos,
-    SUM(s.capacidad) as capacidad_total,
-    COUNT(DISTINCT u.id) as total_estudiantes
+    COUNT(DISTINCT s.id) AS total_salones,
+    COUNT(DISTINCT CASE WHEN s.estado = 'activo' THEN s.id END) AS salones_activos,
+    SUM(s.capacidad) AS capacidad_total,
+    COUNT(DISTINCT se.usuario_id) AS total_estudiantes
 FROM salones s
-LEFT JOIN usuarios u ON u.salon_id = s.id AND u.rol_id = 3 -- 3 = estudiante
+LEFT JOIN salon_estudiantes se ON se.salon_id = s.id
+LEFT JOIN usuarios u ON u.id = se.usuario_id AND u.rol_id = 3 -- 3 = estudiante
 WHERE s.teacher_id = ?";
+
 
 $stats_stmt = $pdo->prepare($stats_query);
 $stats_stmt->execute([$teacher_id]);
@@ -53,10 +55,12 @@ $salones_query = "SELECT
     s.estado
 FROM salones s
 LEFT JOIN cursos c ON s.curso_id = c.id
-LEFT JOIN usuarios u ON u.salon_id = s.id AND u.rol_id = 3
+LEFT JOIN salon_estudiantes su ON su.salon_id = s.id
+LEFT JOIN usuarios u ON u.id = su.usuario_id AND u.rol_id = 3
 WHERE s.teacher_id = ?
 GROUP BY s.id
 ORDER BY c.nombre, s.nivel";
+
 
 $salones_stmt = $pdo->prepare($salones_query);
 $salones_stmt->execute([$teacher_id]);
@@ -68,6 +72,7 @@ $notificaciones_query = "SELECT COUNT(*) as total FROM notificaciones
 $notif_stmt = $pdo->prepare($notificaciones_query);
 $notif_stmt->execute([$teacher_id]);
 $notificaciones = $notif_stmt->fetch();
+
 
 // Obtener página actual
 $current_page = basename($_SERVER['PHP_SELF'], '.php');

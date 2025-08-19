@@ -1,5 +1,5 @@
 <?php
-include($_SERVER['DOCUMENT_ROOT'] . '/ourcenter/config/init.php');
+include('../config/init.php');
 
 // Conexión PDO ($pdo)
 require_once '../config/db.php'; // ajusta este path

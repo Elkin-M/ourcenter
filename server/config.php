@@ -1,7 +1,7 @@
 <?php
 // Añadir estas líneas al archivo config.php para configurar el email
 return [
-    'base_url' => 'http://localhost/ourcenter/',
+    'base_url' => 'http://localhost:8080/ourcenter/',
     'app_name' => 'OurCenter',
     'db' => [
         'host' => 'localhost',

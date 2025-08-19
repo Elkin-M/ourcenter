@@ -27,7 +27,7 @@ require_once __DIR__ . '/config/conexion-courses.php';
     <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon/favicon-16x16.png">
 
     <!-- Manifiesto para PWA (Progressive Web App) -->
-    <link rel="manifest" href="./images/favicon/site.webmanifest">
+    <link rel="manifest" href="/ourcenter/images/favicon/site.webmanifest">
 
     <!-- Meta tag para controlar el color de la barra de dirección en móviles -->
     <meta name="theme-color" content="#0a1b5c">

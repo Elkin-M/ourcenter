@@ -42,19 +42,25 @@ if (!empty($search)) {
     $params[] = $search_param;
 }
 
-$where_clause = implode(" AND ", $where_conditions);
+$where_clause = "sp.profesor_id = ?";
+$params = [$teacher_id];
+
 
 // Obtener salones asignados al profesor
+// Obtener salones asignados al profesor
 $classrooms_query = "SELECT s.*, 
-    COUNT(DISTINCT u.id) as total_students,
+    COUNT(DISTINCT se.usuario_id) as total_students,
     COUNT(DISTINCT CASE WHEN u.estado = 'activo' THEN u.id END) as active_students,
     c.nombre as course_name
-    FROM salones s
-    LEFT JOIN usuarios u ON u.salon_id = s.id
-    LEFT JOIN cursos c ON s.curso_id = c.id
-    WHERE $where_clause
-    GROUP BY s.id
-    ORDER BY s.fecha_creacion DESC";
+FROM salones s
+LEFT JOIN salon_estudiantes se ON se.salon_id = s.id
+LEFT JOIN usuarios u ON u.id = se.usuario_id
+LEFT JOIN cursos c ON s.curso_id = c.id
+LEFT JOIN salon_profesor sp ON sp.salon_id = s.id
+WHERE $where_clause
+GROUP BY s.id
+ORDER BY s.fecha_creacion DESC";
+
 
 $classrooms_stmt = $pdo->prepare($classrooms_query);
 $classrooms_stmt->execute($params);

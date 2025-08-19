@@ -145,7 +145,7 @@ function obtenerInscripcionesUsuario($usuario_id) {
     $query = "SELECT i.*, c.nombre as curso_nombre, c.imagen_url, c.precio, c.fecha_inicio, c.fecha_fin
               FROM inscripciones i
               JOIN cursos c ON i.curso_id = c.id
-              WHERE i.usuario_id = :usuario_id
+              WHERE i.id = :usuario_id
               ORDER BY i.fecha_creacion DESC";
     
     $stmt = $conexion->prepare($query);

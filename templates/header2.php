@@ -11,11 +11,11 @@ require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/conexion-courses.php';
 date_default_timezone_set('America/Bogota');
 
-// Verificar que el usuario está logueado y es administrador
-if (!isset($_SESSION['usuario_id']) || $_SESSION['rol_id'] !== 1) {
-    header('Location: /ourcenter/sesion.php?redirect=admin');
-    exit();
-}
+// // Verificar que el usuario está logueado y es administrador
+// if (!isset($_SESSION['usuario_id']) || $_SESSION['rol_id'] !== 1) {
+//     header('Location: ../../login.php?redirect=admin');
+//     exit();
+// }
 
 // Obtener información del administrador
 $admin_id = $_SESSION['usuario_id'];
@@ -47,8 +47,8 @@ $nuevas_solicitudes = $pdo->query("SELECT COUNT(*) FROM solicitudes_contacto WHE
 // Obtener estadísticas generales con manejo de errores
 try {
     $stats_query = "SELECT 
-        (SELECT COUNT(*) FROM usuarios WHERE rol_id = 2 AND estado = 'activo') as total_estudiantes,
-        (SELECT COUNT(*) FROM usuarios WHERE rol_id = 3 AND estado = 'activo') as total_profesores,
+        (SELECT COUNT(*) FROM usuarios WHERE rol_id = 3 AND estado = 'activo') as total_estudiantes,
+        (SELECT COUNT(*) FROM usuarios WHERE rol_id = 2 AND estado = 'activo') as total_profesores,
         (SELECT COUNT(*) FROM cursos WHERE estado = 'activo') as total_cursos,
         (SELECT COUNT(*) FROM salones WHERE estado = 'activo') as total_salones,
         (SELECT COUNT(*) FROM inscripciones WHERE estado = 'activo') as total_inscripciones";
@@ -486,7 +486,7 @@ function getTimeAgo($datetime) {
 
     // Event listeners
     document.addEventListener('DOMContentLoaded', function () {
-    const toggleBtn = document.getElementById('sidebar-toggle');
+    const toggleBtn = document.getElementById('sidebarToggle');
     if (toggleBtn) {
         toggleBtn.addEventListener('click', toggleSidebar);
     }
@@ -513,7 +513,7 @@ function getTimeAgo($datetime) {
     }
 
     // Manejar el toggle para desktop
-    document.getElementById('sidebar-toggle').addEventListener('click', () => {
+    document.getElementById('sidebarToggle').addEventListener('click', () => {
         if (window.innerWidth >= 768) {
             if (sidebar.classList.contains('show')) {
                 body.classList.remove('sidebar-hidden-by-user');

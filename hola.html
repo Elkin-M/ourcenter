@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HubSpot - Peter Parker Contact</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f8fa;
+            color: #33475b;
+        }
+
+        .header {
+            background-color: #2d3e50;
+            color: white;
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .search-bar {
+            background-color: #34495e;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            color: white;
+            width: 300px;
+        }
+
+        .search-bar::placeholder {
+            color: #bdc3c7;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .contact-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3498db, #2ecc71);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .contact-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .contact-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background-color: #f8f9fa;
+            border-color: #3498db;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .form-field {
+            margin-bottom: 15px;
+        }
+
+        .form-field label {
+            display: block;
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 4px;
+        }
+
+        .form-field input,
+        .form-field select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .form-field input:focus,
+        .form-field select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .nav-tabs {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            overflow: hidden;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .tab:hover {
+            background-color: #f8f9fa;
+        }
+
+        .tab.active {
+            border-bottom-color: #3498db;
+            color: #3498db;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .collapse-btn {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            background-color: #f8f9fa;
+        }
+
+        .activity-icon {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #3498db;
+        }
+
+        .chart-container {
+            height: 200px;
+            background: linear-gradient(45deg, #ff6b6b, #ffa726);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .right-sidebar {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .companies-section,
+        .playbooks-section,
+        .tickets-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .company-item,
+        .playbook-item,
+        .ticket-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .company-item:last-child,
+        .playbook-item:last-child,
+        .ticket-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-primary {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-success {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .status-warning {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            transition: width 0.3s ease;
+        }
+
+        .add-btn {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: underline;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .recently-used {
+            background-color: #2ecc71;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+
+        .frequently-used {
+            background-color: #e74c3c;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar,
+            .right-sidebar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="font-weight: bold; font-size: 18px;">🟠 HubSpot</div>
+            <input type="text" class="search-bar" placeholder="Search HubSpot">
+        </div>
+        <div class="header-icons">
+            <span>📞</span>
+            <span>💬</span>
+            <span>🔔</span>
+            <span>👤</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="contact-header">
+                <div class="avatar">PP</div>
+                <div>
+                    <div class="contact-name">Peter Parker*</div>
+                </div>
+            </div>
+
+            <div class="contact-actions">
+                <button class="action-btn">📧 Email</button>
+                <button class="action-btn">📞 Call</button>
+                <button class="action-btn">📝 Note</button>
+                <button class="action-btn">📅 Meeting</button>
+                <button class="action-btn">⋯</button>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title">📧 Communication subscriptions</div>
+                <div style="font-size: 12px; color: #7f8c8d; margin-bottom: 10px;">
+                    Email: parker@example.com<br>
+                    🟢 Subscribed to all
+                </div>
+                <button class="add-btn">View subscriptions</button>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title">ℹ️ About this contact</div>
+
+                <div class="form-field">
+                    <label>First name</label>
+                    <input type="text" value="Peter">
+                </div>
+
+                <div class="form-field">
+                    <label>Last name</label>
+                    <input type="text" value="Parker">
+                </div>
+
+                <div class="form-field">
+                    <label>Email</label>
+                    <input type="email" value="peter@example.com">
+                </div>
+
+                <div class="form-field">
+                    <label>Phone number</label>
+                    <input type="tel" placeholder="Enter phone number">
+                </div>
+
+                <div class="form-field">
+                    <label>Lifecycle stage</label>
+                    <select>
+                        <option>Customer</option>
+                        <option>Lead</option>
+                        <option>Opportunity</option>
+                        <option>Subscriber</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label>Contact owner</label>
+                    <input type="text" placeholder="Unassigned">
+                </div>
+
+                <div class="form-field">
+                    <label>City</label>
+                    <input type="text" placeholder="Enter city">
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="nav-tabs">
+                <div class="tab active" onclick="switchTab('overview')">Overview</div>
+                <div class="tab" onclick="switchTab('activities')">Activities</div>
+                <div class="tab" onclick="switchTab('orders')">Orders</div>
+            </div>
+
+            <div class="content-card">
+                <div class="card-header">
+                    <div class="card-title">📅 Upcoming activities</div>
+                    <button class="collapse-btn" onclick="toggleCollapse('activities')">Collapse all</button>
+                </div>
+
+                <div id="activities-content">
+                    <div style="margin-bottom: 15px;">
+                        <button class="collapse-btn">All activities ▼</button>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon"></div>
+                        <div>Michael Davis logged on SMS with <strong>Peter Parker*</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="card-header">
+                    <div class="card-title">📊 Top View: Prospecting Attempts</div>
+                </div>
+
+                <div class="chart-container">
+                    Prospecting Attempts Chart
+                    <br>
+                    <small>Interactive chart visualization</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-sidebar">
+            <div class="companies-section">
+                <div class="card-header">
+                    <div class="card-title">🏢 Companies (2)</div>
+                    <button class="add-btn">+ Add</button>
+                </div>
+
+                <div class="company-item">
+                    <div>
+                        <div style="font-weight: 600;">Parker Industries*</div>
+                        <div class="status-badge status-primary">Primary</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="company-item">
+                    <div>
+                        <div style="font-weight: 600;">Doctor Octopus Inc*</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 45%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="add-btn">View associated companies</button>
+            </div>
+
+            <div class="playbooks-section">
+                <div class="card-header">
+                    <div class="card-title">📋 Playbooks</div>
+                    <button class="add-btn">Manage</button>
+                </div>
+
+                <input type="text" class="search-input" placeholder="Search">
+
+                <div class="playbook-item">
+                    <div>
+                        (*) Onboarding Follow-up Call
+                        <span class="recently-used">RECENTLY USED</span>
+                    </div>
+                </div>
+
+                <div class="playbook-item">
+                    <div>
+                        My first sales call
+                        <span class="frequently-used">FREQUENTLY USED</span>
+                    </div>
+                </div>
+
+                <button class="add-btn">View all playbooks</button>
+            </div>
+
+            <div class="tickets-section">
+                <div class="card-header">
+                    <div class="card-title">🎫 Tickets (1)</div>
+                    <button class="add-btn">+ Add</button>
+                </div>
+
+                <div class="ticket-item">
+                    <div>
+                        <div style="font-weight: 600;">Web Server Downtime Notification*</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 60%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="add-btn">View associated tickets</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+
+            // Here you would typically load different content based on the tab
+            console.log('Switched to tab:', tab);
+        }
+
+        function toggleCollapse(section) {
+            const content = document.getElementById(section + '-content');
+            const isCollapsed = content.style.display === 'none';
+
+            if (isCollapsed) {
+                content.style.display = 'block';
+                event.target.textContent = 'Collapse all';
+            } else {
+                content.style.display = 'none';
+                event.target.textContent = 'Expand all';
+            }
+        }
+
+        // Simulate real-time updates
+        function updateProgress() {
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars.forEach(bar => {
+                const currentWidth = parseInt(bar.style.width) || 0;
+                const newWidth = Math.min(currentWidth + Math.random() * 5, 100);
+                bar.style.width = newWidth + '%';
+            });
+        }
+
+        // Auto-save form inputs
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('change', function () {
+                console.log('Auto-saving:', this.name || this.type, '=', this.value);
+                // Here you would typically send the data to a server
+
+                // Show a brief save indicator
+                const indicator = document.createElement('span');
+                indicator.textContent = '✓ Saved';
+                indicator.style.color = '#2ecc71';
+                indicator.style.fontSize = '12px';
+                indicator.style.marginLeft = '8px';
+
+                this.parentNode.appendChild(indicator);
+
+                setTimeout(() => {
+                    if (indicator.parentNode) {
+                        indicator.parentNode.removeChild(indicator);
+                    }
+                }, 2000);
+            });
+        });
+
+        // Add some interactivity
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const action = this.textContent.trim();
+                alert(`Initiating: ${action}`);
+            });
+        });
+
+        // Simulate periodic updates
+        setInterval(updateProgress, 5000);
+
+        // Add search functionality
+        document.querySelectorAll('.search-input').forEach(input => {
+            input.addEventListener('input', function () {
+                const searchTerm = this.value.toLowerCase();
+                const items = this.parentNode.querySelectorAll('.playbook-item, .company-item, .ticket-item');
+
+                items.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    item.style.display = text.includes(searchTerm) ? 'flex' : 'none';
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
